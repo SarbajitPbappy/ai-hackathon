@@ -1,8 +1,8 @@
-import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
+import { createServerClient } from "@supabase/auth-helpers-nextjs";
 import { NextResponse, type NextRequest } from "next/server";
 
 const AUTH_ROUTES = ["/login", "/register"];
-const DASHBOARD_PREFIXES = ["/dashboard", "/profile"];
+const DASHBOARD_PREFIXES = ["/dashboard"];
 const ADMIN_PREFIX = "/admin";
 const JUDGE_PREFIX = "/judge";
 
@@ -13,17 +13,40 @@ function redirectToLogin(request: NextRequest) {
 }
 
 export async function middleware(request: NextRequest) {
-  const response = NextResponse.next();
-  const supabase = createMiddlewareClient({ req: request, res: response });
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return NextResponse.next();
+  }
+
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
+
+  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value, options }) => {
+          request.cookies.set(name, value);
+          response.cookies.set(name, value, options);
+        });
+      },
+    },
+  });
+
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
   const pathname = request.nextUrl.pathname;
   const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
-  const isDashboardRoute = DASHBOARD_PREFIXES.some((route) =>
-    pathname.startsWith(route),
-  );
+  const isDashboardRoute = DASHBOARD_PREFIXES.some((route) => pathname.startsWith(route));
   const isAdminRoute = pathname.startsWith(ADMIN_PREFIX);
   const isJudgeRoute = pathname.startsWith(JUDGE_PREFIX);
 

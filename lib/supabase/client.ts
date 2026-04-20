@@ -1,8 +1,14 @@
 "use client";
 
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import type { Database } from "@/types";
+import { createBrowserClient } from "@supabase/auth-helpers-nextjs";
 
 export function createSupabaseBrowserClient() {
-  return createClientComponentClient<Database>();
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !anonKey) {
+    throw new Error("Missing Supabase browser environment variables");
+  }
+
+  return createBrowserClient(url, anonKey);
 }

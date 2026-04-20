@@ -71,13 +71,11 @@ export default function Navbar({ showSearch = true }: NavbarProps) {
             <Bell className="size-4" />
           </Button>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-10 w-10 rounded-full p-0" aria-label="Account menu">
-                <Avatar className="size-9 border border-border">
-                  <AvatarImage src="" alt="User avatar" />
-                  <AvatarFallback className="bg-surface text-sm text-foreground">CA</AvatarFallback>
-                </Avatar>
-              </Button>
+            <DropdownMenuTrigger className="rounded-full p-0" aria-label="Account menu">
+              <Avatar className="size-9 border border-border">
+                <AvatarImage src="" alt="User avatar" />
+                <AvatarFallback className="bg-surface text-sm text-foreground">CA</AvatarFallback>
+              </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 border-border bg-surface">
               <DropdownMenuLabel className="flex items-center gap-2">
@@ -85,12 +83,8 @@ export default function Navbar({ showSearch = true }: NavbarProps) {
                 My Account
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/dashboard">Dashboard</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/profile/me">Profile</Link>
-              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push("/dashboard")}>Dashboard</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push("/profile/me")}>Profile</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onSignOut}>Sign Out</DropdownMenuItem>
             </DropdownMenuContent>

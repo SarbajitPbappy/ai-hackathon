@@ -1,8 +1,15 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import AdminContestsTable from "@/components/contest/AdminContestsTable";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-export default function AdminContestsPage() {
+export default async function AdminContestsPage() {
+  const supabase = createSupabaseServerClient();
+  const { data: contests } = await supabase
+    .from("contests")
+    .select("id,title,status,type,visibility,start_time,end_time")
+    .order("created_at", { ascending: false });
+
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
@@ -11,14 +18,7 @@ export default function AdminContestsPage() {
           <Link href="/admin/contests/new">Create Contest</Link>
         </Button>
       </div>
-      <Card className="border-border bg-surface">
-        <CardHeader>
-          <CardTitle>No contests yet</CardTitle>
-        </CardHeader>
-        <CardContent className="text-muted-foreground">
-          Create your first coding contest or hackathon to begin.
-        </CardContent>
-      </Card>
+      <AdminContestsTable contests={contests ?? []} />
     </section>
   );
 }
