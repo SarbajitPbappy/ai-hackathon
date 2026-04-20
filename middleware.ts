@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 
 const AUTH_ROUTES = ["/login", "/register"];
@@ -15,6 +16,7 @@ function redirectToLogin(request: NextRequest) {
 export async function middleware(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
     return NextResponse.next();
@@ -41,8 +43,8 @@ export async function middleware(request: NextRequest) {
   });
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
   const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
@@ -50,23 +52,39 @@ export async function middleware(request: NextRequest) {
   const isAdminRoute = pathname.startsWith(ADMIN_PREFIX);
   const isJudgeRoute = pathname.startsWith(JUDGE_PREFIX);
 
-  if (isAuthRoute && session) {
+  if (isAuthRoute && user) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  if ((isDashboardRoute || isAdminRoute || isJudgeRoute) && !session) {
+  if ((isDashboardRoute || isAdminRoute || isJudgeRoute) && !user) {
     return redirectToLogin(request);
   }
 
-  if (!session || (!isAdminRoute && !isJudgeRoute)) {
+  if (!user || (!isAdminRoute && !isJudgeRoute)) {
     return response;
   }
 
-  const { data: userRow } = await supabase
+  // Use admin client (service role) to bypass RLS for role check.
+  // The user is already authenticated via getUser() above.
+  if (!supabaseServiceRoleKey) {
+    console.error("SUPABASE_SERVICE_ROLE_KEY is missing — cannot check user role");
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
+  const admin = createClient(supabaseUrl, supabaseServiceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+
+  const { data: userRow, error: roleError } = await admin
     .from("users")
     .select("role")
-    .eq("id", session.user.id)
+    .eq("id", user.id)
     .single();
+
+  if (roleError) {
+    console.error("Failed to fetch user role:", roleError.message);
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
 
   const role = userRow?.role;
   if (isAdminRoute && role !== "organizer" && role !== "super_admin") {
@@ -85,3 +103,4 @@ export const config = {
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
+

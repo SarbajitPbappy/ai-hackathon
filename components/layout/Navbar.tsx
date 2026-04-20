@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -78,15 +79,17 @@ export default function Navbar({ showSearch = true }: NavbarProps) {
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 border-border bg-surface">
-              <DropdownMenuLabel className="flex items-center gap-2">
-                <UserCircle2 className="size-4 text-accent" />
-                My Account
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.push("/dashboard")}>Dashboard</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push("/profile/me")}>Profile</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={onSignOut}>Sign Out</DropdownMenuItem>
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="flex items-center gap-2">
+                  <UserCircle2 className="size-4 text-accent" />
+                  My Account
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => router.push("/dashboard")}>Dashboard</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push("/profile/me")}>Profile</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={onSignOut}>Sign Out</DropdownMenuItem>
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
