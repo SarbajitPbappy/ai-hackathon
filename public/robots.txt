@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Allow: /contests
+Disallow: /admin
+Disallow: /api
+Disallow: /dashboard
+
+Sitemap: https://ai-hackathon-self.vercel.app/sitemap.xml

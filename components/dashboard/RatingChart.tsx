@@ -16,8 +16,8 @@ type RatingChartPoint = {
 
 export default function RatingChart({ data }: { data: RatingChartPoint[] }) {
   return (
-    <div className="h-72 w-full rounded-lg border border-border bg-surface p-3">
-      <ResponsiveContainer width="100%" height="100%">
+    <div style={{ width: "100%", minHeight: 288 }} className="rounded-lg border border-border bg-surface p-3">
+      <ResponsiveContainer width="100%" height={264} debounce={50}>
         <LineChart data={data} margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
           <XAxis dataKey="label" stroke="#64748b" tickLine={false} axisLine={false} />
           <YAxis stroke="#64748b" tickLine={false} axisLine={false} width={40} />

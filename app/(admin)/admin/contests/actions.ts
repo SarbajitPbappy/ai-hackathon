@@ -8,6 +8,7 @@ import {
   type ProblemFormInput,
 } from "@/lib/validation/contest";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { applyContestEloRatings } from "@/lib/rating";
 
 type ActionResult = {
@@ -30,6 +31,7 @@ export async function createContestAction(input: ContestFormInput): Promise<Acti
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid contest input" };
   }
 
+  // Verify identity with the user client, then use admin client to bypass RLS
   const supabase = createSupabaseServerClient();
   const {
     data: { user },
@@ -39,8 +41,9 @@ export async function createContestAction(input: ContestFormInput): Promise<Acti
     return { ok: false, error: "You must be logged in." };
   }
 
+  const admin = createSupabaseAdminClient();
   const payload = parsed.data;
-  const { data, error } = await supabase
+  const { data, error } = await admin
     .from("contests")
     .insert({
       ...payload,
@@ -71,14 +74,14 @@ export async function updateContestAction(
   }
 
   const payload = parsed.data;
-  const supabase = createSupabaseServerClient();
-  const { data: existingContest } = await supabase
+  const admin = createSupabaseAdminClient();
+  const { data: existingContest } = await admin
     .from("contests")
     .select("status")
     .eq("id", contestId)
     .single();
 
-  const { error } = await supabase
+  const { error } = await admin
     .from("contests")
     .update({
       ...payload,
@@ -103,8 +106,8 @@ export async function updateContestAction(
 }
 
 export async function deleteContestAction(contestId: string): Promise<ActionResult> {
-  const supabase = createSupabaseServerClient();
-  const { error } = await supabase.from("contests").delete().eq("id", contestId);
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin.from("contests").delete().eq("id", contestId);
 
   if (error) {
     return { ok: false, error: error.message };

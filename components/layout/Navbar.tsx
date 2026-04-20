@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Bell, Search, UserCircle2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import type { User } from "@supabase/supabase-js";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +28,21 @@ export default function Navbar({ showSearch = true }: NavbarProps) {
   const router = useRouter();
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [query, setQuery] = useState("");
+  const [user, setUser] = useState<User | null | undefined>(undefined); // undefined = loading
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user ?? null);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, [supabase]);
 
   const onSignOut = async () => {
     await supabase.auth.signOut();
@@ -68,30 +84,48 @@ export default function Navbar({ showSearch = true }: NavbarProps) {
         ) : null}
 
         <div className="ml-auto flex items-center gap-2">
-          <Button variant="ghost" size="icon" aria-label="Notifications">
-            <Bell className="size-4" />
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger className="rounded-full p-0" aria-label="Account menu">
-              <Avatar className="size-9 border border-border">
-                <AvatarImage src="" alt="User avatar" />
-                <AvatarFallback className="bg-surface text-sm text-foreground">CA</AvatarFallback>
-              </Avatar>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 border-border bg-surface">
-              <DropdownMenuGroup>
-                <DropdownMenuLabel className="flex items-center gap-2">
-                  <UserCircle2 className="size-4 text-accent" />
-                  My Account
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push("/dashboard")}>Dashboard</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push("/profile/me")}>Profile</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onSignOut}>Sign Out</DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Show skeleton while auth state loads */}
+          {user === undefined ? (
+            <div className="h-9 w-9 animate-pulse rounded-full bg-surface" />
+          ) : user ? (
+            <>
+              <Button variant="ghost" size="icon" aria-label="Notifications">
+                <Bell className="size-4" />
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger className="rounded-full p-0" aria-label="Account menu">
+                  <Avatar className="size-9 border border-border">
+                    <AvatarImage src="" alt="User avatar" />
+                    <AvatarFallback className="bg-surface text-sm text-foreground">
+                      {user.email?.slice(0, 2).toUpperCase() ?? "CA"}
+                    </AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 border-border bg-surface">
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel className="flex items-center gap-2">
+                      <UserCircle2 className="size-4 text-accent" />
+                      {user.email}
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => router.push("/dashboard")}>Dashboard</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push("/profile/me")}>Profile</DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={onSignOut}>Sign Out</DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/login">Sign In</Link>
+              </Button>
+              <Button asChild size="sm">
+                <Link href="/register">Register</Link>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </header>
