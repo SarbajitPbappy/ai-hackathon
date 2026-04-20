@@ -44,19 +44,52 @@ Redis is used for rate-limiting submissions and caching the leaderboard.
 
 ---
 
-## 4. Environment Variables
+## 4. Environment Variables & Where to Find Them
 
-Create a project on **Vercel** and add the following environment variables. You can find these in the project settings of each service.
+Configure your hosting platform (e.g., Vercel) with the following environment variables.
 
+### Supabase Keys
+*Found in: **Project Settings** > **API***
+
+| Variable | Specific Location in Dashboard |
+| :--- | :--- |
+| `NEXT_PUBLIC_SUPABASE_URL` | **Project URL** section |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | **Project API keys** section > `anon` `public` |
+| `SUPABASE_SERVICE_ROLE_KEY` | **Project API keys** section > `service_role` `secret` (click reveal) |
+
+### Judge0 (RapidAPI) Key
+*Found in: **RapidAPI Hub** > **Personal Dashboard***
+
+| Variable | Specific Location in Dashboard |
+| :--- | :--- |
+| `RAPIDAPI_KEY` | Select **Judge0 CE** > **Endpoints** > Check any header for `X-RapidAPI-Key` |
+
+### Redis (Upstash) Keys
+*Found in: **Databases** > [Your DB Name] > **Overview***
+
+| Variable | Specific Location in Dashboard |
+| :--- | :--- |
+| `UPSTASH_REDIS_REST_URL` | Scroll down to **REST API** section > Copy the URL |
+| `UPSTASH_REDIS_REST_TOKEN` | Scroll down to **REST API** section > Copy the Token (Secret) |
+
+### AI (Anthropic) Key
+*Found in: **Anthropic Console** > **Settings** > **API Keys***
+
+| Variable | Specific Location in Dashboard |
+| :--- | :--- |
+| `ANTHROPIC_API_KEY` | Click **Create Key** or copy an existing one |
+
+### Email (Resend) Key
+*Found in: **Resend Dashboard** > **API Keys***
+
+| Variable | Specific Location in Dashboard |
+| :--- | :--- |
+| `RESEND_API_KEY` | Click **Create API Key** > Copy the generated string |
+
+### Application Config
 | Variable | Description |
 | :--- | :--- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase anonymous key |
-| `SUPABASE_SERVICE_ROLE_KEY` | Your Supabase service role key (Secret) |
-| `RAPIDAPI_KEY` | Your RapidAPI key for Judge0 |
-| `UPSTASH_REDIS_REST_URL` | Your Upstash Redis REST URL |
-| `UPSTASH_REDIS_REST_TOKEN` | Your Upstash Redis REST Token (Secret) |
-| `NEXT_PUBLIC_APP_URL` | Your production application URL |
+| `NEXT_PUBLIC_APP_URL` | Your production application URL (e.g., `https://your-app.vercel.app`) |
 
 ---
 
